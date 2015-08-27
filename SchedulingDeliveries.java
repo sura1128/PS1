@@ -35,7 +35,7 @@ class SchedulingDeliveries {
 
 	void GiveBirth(String womanName) { // DELETE ITEM
 
-		bh.Delete(womanName);
+		bh.ExtractMax();
 
 	}
 
@@ -124,7 +124,7 @@ class BinaryHeap {
 
 	void shiftUp(int i) {
 		Woman temp = A.get(i);
-		Woman temp2 = A.get(parent(i));
+		Woman temp2;
 		temp.index = i;
 		while (i > 1 && A.get(parent(i)).dilation <= A.get(i).dilation) {
 			if (A.get(parent(i)).dilation == A.get(i).dilation && A.get(parent(i)).order < A.get(i).order) {
@@ -152,9 +152,12 @@ class BinaryHeap {
 			B.put(mother.name, mother);
 		} else {
 			A.set(BinaryHeapSize, mother);
+			B.put(mother.name, mother);
+			
 		}
 
 		shiftUp(BinaryHeapSize);
+//		print();
 	}
 
 	void Update(Woman mother) {
@@ -177,8 +180,11 @@ class BinaryHeap {
 		B.remove(motherName);
 		BinaryHeapSize--;
 
-		if ((i - 1) != BinaryHeapSize)
+		if ((i - 1) != BinaryHeapSize) {
+			shiftUp(i);
 			shiftDown(i);
+		}
+
 	}
 
 	String Query() {
@@ -215,24 +221,34 @@ class BinaryHeap {
 		Woman temp = A.get(i);
 		Woman temp2;
 		temp.index = i;
+		boolean isLeft = true;
+		boolean isRight = true;
+
 		while (i <= BinaryHeapSize) {
+			isLeft = true;
+			isRight = true;
+			
 			int maxV = A.get(i).dilation, max_id = i;
 			if (left(i) <= BinaryHeapSize && maxV <= A.get(left(i)).dilation) {
-				if (left(i) <= BinaryHeapSize && maxV == A.get(left(i)).dilation) {
+				if (maxV == A.get(left(i)).dilation) {
 					if (A.get(i).order < A.get(left(i)).order)
-						break;
+						isLeft = false;
 				}
-				maxV = A.get(left(i)).dilation;
-				max_id = left(i);
+				if (isLeft) {
+					maxV = A.get(left(i)).dilation;
+					max_id = left(i);
+				}
 			}
 
 			if (right(i) <= BinaryHeapSize && maxV <= A.get(right(i)).dilation) {
-				if (right(i) <= BinaryHeapSize && maxV == A.get(right(i)).dilation) {
+				if (maxV == A.get(right(i)).dilation) {
 					if (A.get(i).order < A.get(right(i)).order)
-						break;
+						isRight = false;
 				}
-				maxV = A.get(right(i)).dilation;
-				max_id = right(i);
+				if (isRight) {
+					maxV = A.get(right(i)).dilation;
+					max_id = right(i);
+				}
 			}
 
 			if (max_id != i) {
@@ -245,6 +261,8 @@ class BinaryHeap {
 				i = max_id;
 			} else
 				break;
+			
+			
 		}
 	}
 
