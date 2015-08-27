@@ -5,12 +5,10 @@ import java.io.*;
 
 // write your matric number here: A0102800A
 // write your name here: Suranjana Sengupta
-// write list of collaborators here:
+// write list of collaborators here: Akshat Dubey
 // year 2015 hash code: JESg5svjYpIsmHmIjabX (do NOT delete this line)
 
 class SchedulingDeliveries {
-	// if needed, declare a private data structure here that
-	// is accessible to all methods in this class
 
 	BinaryHeap bh;
 
@@ -73,6 +71,7 @@ class SchedulingDeliveries {
 				break;
 			}
 		}
+		// bh.print();
 		pr.close();
 	}
 
@@ -87,21 +86,25 @@ class Woman {
 
 	int dilation;
 	String name;
+	int order; // order of insertion into heap
 
 	Woman() {
 		dilation = 0;
 		name = "";
+		order = 0;
 	}
 }
 
 class BinaryHeap {
 	private Vector<Woman> A;
 	private int BinaryHeapSize;
+	int binaryHeapOrder;
 
 	BinaryHeap() {
 		A = new Vector<Woman>();
 		A.add(new Woman());
 		BinaryHeapSize = 0;
+		binaryHeapOrder = 0;
 	}
 
 	int parent(int i) {
@@ -118,17 +121,23 @@ class BinaryHeap {
 
 	void shiftUp(int i) {
 
-		while (i > 1 && A.get(parent(i)).dilation < A.get(i).dilation) {
+		while (i > 1 && A.get(parent(i)).dilation <= A.get(i).dilation) {
+			if (A.get(parent(i)).dilation == A.get(i).dilation && A.get(parent(i)).order < A.get(i).order) {
+				break;
+			}
 
 			Woman temp = A.get(i);
 			A.set(i, A.get(parent(i)));
 			A.set(parent(i), temp);
 			i = parent(i);
 		}
+
 	}
 
 	void Insert(Woman mother) {
 		BinaryHeapSize++;
+		binaryHeapOrder++;
+		mother.order = binaryHeapOrder;
 		if (BinaryHeapSize >= A.size())
 			A.add(mother);
 		else
@@ -137,12 +146,12 @@ class BinaryHeap {
 	}
 
 	void Update(Woman mother) {
-
 		Woman temp = new Woman();
 		for (int i = 1; i <= BinaryHeapSize; i++) {
 			if (A.get(i).name.equals(mother.name)) {
 				temp.dilation = A.get(i).dilation + mother.dilation;
 				temp.name = A.get(i).name;
+				temp.order = A.get(i).order;
 				A.set(i, temp);
 				shiftUp(i);
 				shiftDown(i);
@@ -169,14 +178,30 @@ class BinaryHeap {
 			return "The delivery suite is empty";
 	}
 
+	void print() {
+		System.out.println("PRINTING ARRAY ELEMENTS");
+		for (int i = 1; i < BinaryHeapSize; i++) {
+			System.out.println(A.get(i).name + " " + A.get(i).dilation + " " + A.get(i).order);
+		}
+	}
+
 	void shiftDown(int i) {
 		while (i <= BinaryHeapSize) {
 			int maxV = A.get(i).dilation, max_id = i;
-			if (left(i) <= BinaryHeapSize && maxV < A.get(left(i)).dilation) {
+			if (left(i) <= BinaryHeapSize && maxV <= A.get(left(i)).dilation) {
+				if (left(i) <= BinaryHeapSize && maxV == A.get(left(i)).dilation) {
+					if (A.get(i).order < A.get(left(i)).order)
+						break;
+				}
 				maxV = A.get(left(i)).dilation;
 				max_id = left(i);
 			}
-			if (right(i) <= BinaryHeapSize && maxV < A.get(right(i)).dilation) {
+
+			if (right(i) <= BinaryHeapSize && maxV <= A.get(right(i)).dilation) {
+				if (right(i) <= BinaryHeapSize && maxV == A.get(right(i)).dilation) {
+					if (A.get(i).order < A.get(right(i)).order)
+						break;
+				}
 				maxV = A.get(right(i)).dilation;
 				max_id = right(i);
 			}
