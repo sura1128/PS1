@@ -87,16 +87,19 @@ class Woman {
 	int dilation;
 	String name;
 	int order; // order of insertion into heap
+	int index;
 
 	Woman() {
 		dilation = 0;
 		name = "";
 		order = 0;
+		index = 0;
 	}
 }
 
 class BinaryHeap {
 	private Vector<Woman> A;
+	private Map<String, Woman> B = new HashMap<String, Woman>();
 	private int BinaryHeapSize;
 	int binaryHeapOrder;
 
@@ -120,16 +123,22 @@ class BinaryHeap {
 	} // shortcut for 2*i + 1
 
 	void shiftUp(int i) {
-
+		Woman temp = A.get(i);
+		Woman temp2 = A.get(parent(i));
+		temp.index = i;
 		while (i > 1 && A.get(parent(i)).dilation <= A.get(i).dilation) {
 			if (A.get(parent(i)).dilation == A.get(i).dilation && A.get(parent(i)).order < A.get(i).order) {
 				break;
 			}
 
-			Woman temp = A.get(i);
-			A.set(i, A.get(parent(i)));
+			temp = A.get(i);
+			temp2 = A.get(parent(i));
+			temp.index = parent(i);
+			temp2.index = i;
+			A.set(i, temp2);
 			A.set(parent(i), temp);
 			i = parent(i);
+
 		}
 
 	}
@@ -138,37 +147,38 @@ class BinaryHeap {
 		BinaryHeapSize++;
 		binaryHeapOrder++;
 		mother.order = binaryHeapOrder;
-		if (BinaryHeapSize >= A.size())
+		if (BinaryHeapSize >= A.size()) {
 			A.add(mother);
-		else
+			B.put(mother.name, mother);
+		} else {
 			A.set(BinaryHeapSize, mother);
+		}
+
 		shiftUp(BinaryHeapSize);
 	}
 
 	void Update(Woman mother) {
-		Woman temp = new Woman();
-		for (int i = 1; i <= BinaryHeapSize; i++) {
-			if (A.get(i).name.equals(mother.name)) {
-				temp.dilation = A.get(i).dilation + mother.dilation;
-				temp.name = A.get(i).name;
-				temp.order = A.get(i).order;
-				A.set(i, temp);
-				shiftUp(i);
-				shiftDown(i);
-			}
-		}
+		Woman temp;
+		int i = searchByName(mother.name);
+		temp = A.get(i);
+		temp.dilation = A.get(i).dilation + mother.dilation;
+		temp.name = A.get(i).name;
+		temp.order = A.get(i).order;
+		A.set(i, temp);
+		shiftUp(i);
+		shiftDown(i);
 
 	}
 
 	void Delete(String motherName) {
-		for (int i = 1; i <= BinaryHeapSize; i++) {
-			if (A.get(i).name.equals(motherName)) {
-				A.set(i, A.get(BinaryHeapSize));
-				A.remove(BinaryHeapSize);
-				BinaryHeapSize--;
-				shiftDown(i);
-			}
-		}
+		int i = searchByName(motherName);
+		A.set(i, A.get(BinaryHeapSize));
+		A.remove(BinaryHeapSize);
+		B.remove(motherName);
+		BinaryHeapSize--;
+
+		if ((i - 1) != BinaryHeapSize)
+			shiftDown(i);
 	}
 
 	String Query() {
@@ -178,14 +188,33 @@ class BinaryHeap {
 			return "The delivery suite is empty";
 	}
 
+	int searchByName(String motherName) {
+		return B.get(motherName).index;
+	}
+
 	void print() {
-		System.out.println("PRINTING ARRAY ELEMENTS");
-		for (int i = 1; i < BinaryHeapSize; i++) {
-			System.out.println(A.get(i).name + " " + A.get(i).dilation + " " + A.get(i).order);
+		System.out.println();
+		System.out.println();
+		System.out.println("PRINTING MAP ELEMENTS");
+		for (Map.Entry<String, Woman> entry : B.entrySet()) {
+			System.out.println(entry.getKey() + "/" + entry.getValue().index);
 		}
+		System.out.println();
+
+		System.out.println("PRINTING VECTOR ELEMENTS");
+		for (int i = 0; i < A.size(); i++) {
+			System.out.println(i + " " + A.get(i).name + " " + A.get(i).index + " " + A.get(i).dilation);
+		}
+
+		System.out.println();
+		System.out.println();
+
 	}
 
 	void shiftDown(int i) {
+		Woman temp = A.get(i);
+		Woman temp2;
+		temp.index = i;
 		while (i <= BinaryHeapSize) {
 			int maxV = A.get(i).dilation, max_id = i;
 			if (left(i) <= BinaryHeapSize && maxV <= A.get(left(i)).dilation) {
@@ -207,8 +236,11 @@ class BinaryHeap {
 			}
 
 			if (max_id != i) {
-				Woman temp = A.get(i);
-				A.set(i, A.get(max_id));
+				temp = A.get(i);
+				temp2 = A.get(max_id);
+				temp.index = max_id;
+				temp2.index = i;
+				A.set(i, temp2);
 				A.set(max_id, temp);
 				i = max_id;
 			} else
