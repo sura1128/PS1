@@ -34,8 +34,8 @@ class SchedulingDeliveries {
 	}
 
 	void GiveBirth(String womanName) { // DELETE ITEM
-
-		bh.ExtractMax();
+		// bh.ExtractMax(); // for Subset B
+		bh.Delete(womanName);
 
 	}
 
@@ -71,7 +71,6 @@ class SchedulingDeliveries {
 				break;
 			}
 		}
-		// bh.print();
 		pr.close();
 	}
 
@@ -147,22 +146,19 @@ class BinaryHeap {
 		BinaryHeapSize++;
 		binaryHeapOrder++;
 		mother.order = binaryHeapOrder;
+		B.put(mother.name, mother);
 		if (BinaryHeapSize >= A.size()) {
 			A.add(mother);
-			B.put(mother.name, mother);
 		} else {
 			A.set(BinaryHeapSize, mother);
-			B.put(mother.name, mother);
-			
-		}
 
+		}
 		shiftUp(BinaryHeapSize);
-//		print();
 	}
 
 	void Update(Woman mother) {
 		Woman temp;
-		int i = searchByName(mother.name);
+		int i = getNameIndex(mother.name);
 		temp = A.get(i);
 		temp.dilation = A.get(i).dilation + mother.dilation;
 		temp.name = A.get(i).name;
@@ -174,11 +170,13 @@ class BinaryHeap {
 	}
 
 	void Delete(String motherName) {
-		int i = searchByName(motherName);
+		int i = getNameIndex(motherName);
 		A.set(i, A.get(BinaryHeapSize));
 		A.remove(BinaryHeapSize);
 		B.remove(motherName);
+
 		BinaryHeapSize--;
+
 
 		if ((i - 1) != BinaryHeapSize) {
 			shiftUp(i);
@@ -194,7 +192,7 @@ class BinaryHeap {
 			return "The delivery suite is empty";
 	}
 
-	int searchByName(String motherName) {
+	int getNameIndex(String motherName) {
 		return B.get(motherName).index;
 	}
 
@@ -221,6 +219,7 @@ class BinaryHeap {
 		Woman temp = A.get(i);
 		Woman temp2;
 		temp.index = i;
+
 		boolean isLeft = true;
 		boolean isRight = true;
 
@@ -228,6 +227,9 @@ class BinaryHeap {
 			isLeft = true;
 			isRight = true;
 			
+			int leftMax = 0, leftMaxId = 0;
+			int rightMax = 0, rightMaxId = 0;
+
 			int maxV = A.get(i).dilation, max_id = i;
 			if (left(i) <= BinaryHeapSize && maxV <= A.get(left(i)).dilation) {
 				if (maxV == A.get(left(i)).dilation) {
@@ -235,8 +237,8 @@ class BinaryHeap {
 						isLeft = false;
 				}
 				if (isLeft) {
-					maxV = A.get(left(i)).dilation;
-					max_id = left(i);
+					leftMax = A.get(left(i)).dilation;
+					leftMaxId = left(i);
 				}
 			}
 
@@ -246,6 +248,22 @@ class BinaryHeap {
 						isRight = false;
 				}
 				if (isRight) {
+					rightMax = A.get(right(i)).dilation;
+					rightMaxId = right(i);
+				}
+			}
+
+			if (rightMax > leftMax) {
+				maxV = A.get(right(i)).dilation;
+				max_id = right(i);
+			} else if (rightMax < leftMax) {
+				maxV = A.get(left(i)).dilation;
+				max_id = left(i);
+			} else if (rightMax == leftMax) {
+				if (A.get(rightMaxId).order > A.get(leftMaxId).order) {
+					maxV = A.get(left(i)).dilation;
+					max_id = left(i);
+				} else if (A.get(rightMaxId).order < A.get(leftMaxId).order) {
 					maxV = A.get(right(i)).dilation;
 					max_id = right(i);
 				}
@@ -261,8 +279,7 @@ class BinaryHeap {
 				i = max_id;
 			} else
 				break;
-			
-			
+
 		}
 	}
 
